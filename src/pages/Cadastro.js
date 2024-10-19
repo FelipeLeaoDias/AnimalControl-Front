@@ -1,36 +1,50 @@
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, Dimensions } from 'react-native';
 import React, { Component } from 'react';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.png'; // Certifique-se que o caminho está correto
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
 
-export default class Login extends Component {
+export default class Cadastro extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      login: '',
-      senha: '',
-      manterLogin: false,
+        email: '',
+        senha: '',
+        senhaconfirm: '',
     };
   }
-  
+
+  handleCadastro = () => {
+    const { email, senha, senhaconfirm } = this.state;
+
+    // Exemplo simples de validação
+    if ( senha === senhaconfirm) {
+      // Redireciona para a página de Login após o cadastro
+      this.props.navigation.navigate('Login');
+    } else {
+      alert("As senhas não coincidem ou campos estão vazios.");
+    }
+  };
+
   render() {
-    const { navigation } = this.props;
     return (
       <View style={styles.container}>
+
         <Image
           source={logo} 
           style={styles.logo}
         />
+
         <View style={styles.forms}>
-          <Text style={styles.label}>Login:</Text>
+          <Text style={styles.label}>E-mail:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite seu login"
-            value={this.state.login}
-            onChangeText={(text) => this.setState({ login: text })}
+            placeholder="Digite seu E-mail"
+            value={this.state.email}
+            onChangeText={(text) => this.setState({ email: text })}
           />
         </View>
+
         <View style={styles.forms}>
           <Text style={styles.label}>Senha:</Text>
           <TextInput
@@ -41,16 +55,23 @@ export default class Login extends Component {
             onChangeText={(text) => this.setState({ senha: text })}
           />
         </View>
+
         <View style={styles.forms}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.buttonText}>Entrar</Text>
-          </TouchableOpacity>
+          <Text style={styles.label}>Confirme sua senha:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirme sua senha"
+            secureTextEntry={true}
+            value={this.state.senhaconfirm}
+            onChangeText={(text) => this.setState({ senhaconfirm: text })}
+          />
         </View>
 
-        <Text>Não possui conta?</Text>
-        <TouchableOpacity style={styles.registerContainer} onPress={() => navigation.navigate('Cadastro')}>
-          <Text style={styles.registerText}>Cadastre-se!</Text>
-        </TouchableOpacity>
+        <View style={styles.forms}>
+          <TouchableOpacity style={styles.button} onPress={this.handleCadastro}>
+            <Text style={styles.buttonText}>Cadastrar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -70,11 +91,14 @@ const styles = StyleSheet.create({
   },
   logo: {
     marginBottom: height * 0.05,  // Margin abaixo da logo em relação à altura da tela
+    width: 100,  // Ajuste o tamanho da logo conforme necessário
+    height: 100,
   },
   label: {
     alignSelf: 'flex-start',
     fontSize: width * 0.045,  // Tornando a fonte responsiva
     color: '#000',
+    fontWeight: 'bold',
     marginBottom: height * 0.01,
   },
   input: {
@@ -86,6 +110,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     marginBottom: height * 0.03,  // Margin abaixo dos inputs será 3% da altura da tela
     backgroundColor: '#D3D3D3',
+    justifyContent: 'center',
   },
   button: {
     width: '100%',  // O botão terá a mesma largura do input
@@ -97,14 +122,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: width * 0.045,  // O tamanho do texto será 4.5% da largura da tela
-  },
-  registerContainer: {
-    marginTop: height * 0.02,  // Margin superior do botão "Cadastrar-se" será 2% da altura da tela
-  },
-  registerText: {
-    color: '#4F7942',
-    fontWeight: 'bold',
     fontSize: width * 0.045,  // O tamanho do texto será 4.5% da largura da tela
   },
 });
