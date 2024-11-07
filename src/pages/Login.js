@@ -42,7 +42,7 @@ export default class Login extends Component {
           />
         </View>
         <View style={styles.forms}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
             <Text style={styles.buttonText}>Entrar</Text>
           </TouchableOpacity>
         </View>
