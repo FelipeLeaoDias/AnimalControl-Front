@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import Botao from '../components/Botao';
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
 
@@ -68,10 +69,10 @@ export default class Fazendas extends Component {
                     </Text>
                 </View>
                 <View>
-                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
                         <Text style={styles.buttonText}>Editar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
                         <Text style={styles.buttonText}>Ir</Text>
                     </TouchableOpacity>
                 </View>
