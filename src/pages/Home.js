@@ -49,23 +49,31 @@ export default class Home extends Component {
     const { selectedFarm } = this.state;
     return (
 
-          <SafeAreaProvider>
-        <NavBar></NavBar>
+      <SafeAreaProvider>
+          <NavBar></NavBar>
             <SafeAreaView style={styles.container}>
                 <View style={styles.descriptionContainer}>
                     <View style={styles.descriptionContainerText}>
-                        <Text style={styles.descriptionLabel}>Fazenda:</Text>
+                        <Text style={styles.descriptionLabel}>Categoria:</Text>
                         <Text style={styles.descriptionText}>
-                        {selectedFarm ? selectedFarm.titulo : 'Nenhuma categoria selecionada'}
+                          {selectedFarm ? selectedFarm.titulo : 'Nenhuma categoria selecionada'}
                         </Text>
-                        <Text style={styles.descriptionLabel}>Machos:</Text>
-                        <Text style={styles.descriptionText}>
-                        {selectedFarm ? selectedFarm.contmacho : 'Nenhum macho'}
-                        </Text>
-                        <Text style={styles.descriptionLabel}>Femeas:</Text>
-                        <Text style={styles.descriptionText}>
-                        {selectedFarm ? selectedFarm.contfemea : 'Nenhum macho'}
-                        </Text>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                          <Text style={styles.descriptionLabel}>
+                            Machos: 
+                          </Text>
+                          <Text style={styles.descriptionText}>
+                            {selectedFarm ? selectedFarm.contmacho : 'Nenhum macho'}
+                          </Text>
+                        </View>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                          <Text style={styles.descriptionLabel}>
+                            Femeas: 
+                          </Text>
+                          <Text style={styles.descriptionText}>
+                            {selectedFarm ? selectedFarm.contfemea : 'Nenhuma femea'}
+                          </Text>
+                        </View>
                     </View>
                     <View>
                         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
@@ -76,7 +84,6 @@ export default class Home extends Component {
                         </TouchableOpacity>
                     </View>
               </View>
-              <Text style={styles.label}>Lista de Fazendas</Text>
 
               <FlatList
                 data={DATA}
@@ -165,16 +172,16 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.02,
   },
   button: {
-    width: '100%',  // O botão terá a mesma largura do input
-    backgroundColor: '#4F7942',
-    paddingVertical: height * 0.015,  // O padding vertical do botão será 1.5% da altura da tela
+    width: '100%', 
+    backgroundColor: '#869687',
+    paddingVertical: height * 0.02,  
     borderRadius: 5,
-    alignItems: 'center',  // Centraliza o texto dentro do botão
-    marginBottom: height * 0.05,  // Margin abaixo do botão será 5% da altura da tela
+    alignItems: 'center', 
+    marginBottom: height * 0.018,  
   },
   buttonText: {
     color: '#fff',
-    fontSize: width * 0.045,  // O tamanho do texto será 4.5% da largura da tela
+    fontSize: width * 0.05, 
   },
   item: {
     padding: 20,
@@ -189,5 +196,6 @@ const styles = StyleSheet.create({
   },
   lista: {
     marginBottom: height * 0.02,
+    width: '80%',  // Ajustando a largura do FlatList para 80% da tela
   },
 });
