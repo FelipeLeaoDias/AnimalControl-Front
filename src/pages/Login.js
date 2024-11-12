@@ -1,6 +1,7 @@
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, Dimensions } from 'react-native';
 import React, { Component } from 'react';
 import logo from '../assets/logo.png';
+import CardInput from '../components/CardInput'
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
 
@@ -22,25 +23,22 @@ export default class Login extends Component {
           source={logo} 
           style={styles.logo}
         />
-        <View style={styles.forms}>
-          <Text style={styles.label}>Login:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu login"
-            value={this.state.login}
-            onChangeText={(text) => this.setState({ login: text })}
-          />
-        </View>
-        <View style={styles.forms}>
-          <Text style={styles.label}>Senha:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite sua senha"
-            secureTextEntry={true}
-            value={this.state.senha}
-            onChangeText={(text) => this.setState({ senha: text })}
-          />
-        </View>
+
+        <CardInput
+          title="Login:"
+          description="Digite seu login"
+          text={this.state.login}
+          onChangeText={(text) => this.setState({ login: text })}
+        />
+
+        <CardInput
+          title="Senha:"
+          description="Digite sua senha"
+          secureTextEntry={true}
+          text={this.state.senha}
+          onChangeText={(text) => this.setState({ senha: text })}
+        />
+
         <View style={styles.forms}>
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
             <Text style={styles.buttonText}>Entrar</Text>
@@ -70,22 +68,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     marginBottom: height * 0.05,  // Margin abaixo da logo em relação à altura da tela
-  },
-  label: {
-    alignSelf: 'flex-start',
-    fontSize: width * 0.045,  // Tornando a fonte responsiva
-    color: '#000',
-    marginBottom: height * 0.01,
-  },
-  input: {
-    width: '100%',  // O input ocupará 100% da largura do componente forms
-    height: height * 0.06,  // 6% da altura da tela
-    borderColor: '#4F7942',
-    borderWidth: 1,
-    borderRadius: 3,
-    paddingLeft: 10,
-    marginBottom: height * 0.03,  // Margin abaixo dos inputs será 3% da altura da tela
-    backgroundColor: '#D3D3D3',
   },
   button: {
     width: '100%',  // O botão terá a mesma largura do input
