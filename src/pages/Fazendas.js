@@ -11,21 +11,18 @@ import {
   Button
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import {CreateFarmModal} from '../components/CreateFarmModal'
+import {get} from '../utils/axios'
+import * as SecureStorage from 'expo-secure-store'
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
 
-const DATA = [
-  { id: '1', titulo: 'Fazenda A', descricao: 'fazenda 1 descricao pra testar a mais com 60' },
-  { id: '2', titulo: 'Fazenda B', descricao: 'fazenda 2 descricao pra testar ate 60 caracteres' },
-  { id: '3', titulo: 'Fazenda C', descricao: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
-  { id: '4', titulo: 'Fazenda D', descricao: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' }, // descricao com 60 caracteres
-  { id: '5', titulo: 'Fazenda E', descricao: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
-];
+
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
-    <Text style={[styles.title, { color: textColor }]}>{item.titulo}</Text>
-    <Text>{item.descricao}</Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.name}</Text>
+    <Text>{item.description}</Text>
   </TouchableOpacity>
 );
 
@@ -37,7 +34,31 @@ export default class Fazendas extends Component {
       showModal: false,
       newFarmTitle: '',
       newFarmDescription: '',
+      DATA: []
     };
+  }
+
+  refreshFarmData = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
+    get('/farm', token)
+      .then(data => this.setState({DATA: data}))
+      .catch(err => alert(err.message))
+  }
+
+
+  componentDidMount() {
+    this.refreshFarmData()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.selectedFarm !== prevState.selectedFarm) {
+      this.refreshFarmData()
+    }
   }
 
   // Função para abrir o modal
@@ -55,11 +76,11 @@ export default class Fazendas extends Component {
     const { newFarmTitle, newFarmDescription } = this.state;
     if (newFarmTitle && newFarmDescription) {
       const newFarm = {
-        id: (DATA.length + 1).toString(), // Gerar um novo id simples
-        titulo: newFarmTitle,
-        descricao: newFarmDescription,
+        id: (this.state.DATA.length + 1).toString(), // Gerar um novo id simples
+        name: newFarmTitle,
+        description: newFarmDescription,
       };
-      DATA.push(newFarm);
+      this.state.DATA.push(newFarm);
       this.setState({ selectedFarm: newFarm, showModal: false, newFarmTitle: '', newFarmDescription: '' });
     }
   };
@@ -90,11 +111,11 @@ export default class Fazendas extends Component {
             <View style={styles.descriptionContainerText}>
               <Text style={styles.descriptionLabel}>Fazenda:</Text>
               <Text style={styles.descriptionText}>
-                {selectedFarm ? selectedFarm.titulo : 'Nenhuma fazenda selecionada'}
+                {selectedFarm ? selectedFarm.name: 'Nenhuma fazenda selecionada'}
               </Text>
               <Text style={styles.descriptionLabel}>Descrição:</Text>
               <Text style={styles.descriptionText}>
-                {selectedFarm ? selectedFarm.descricao : 'Sem descrição'}
+                {selectedFarm ? selectedFarm.description : 'Sem descrição'}
               </Text>
             </View>
             <View>
@@ -109,7 +130,7 @@ export default class Fazendas extends Component {
           <Text style={styles.label}>Lista de Fazendas</Text>
 
           <FlatList
-            data={DATA}
+            data={this.state.DATA}
             renderItem={this.renderItem}
             keyExtractor={(item) => item.id}
             extraData={this.state.selectedFarm}
@@ -121,42 +142,15 @@ export default class Fazendas extends Component {
           </TouchableOpacity>
 
           {/* Modal de criação de fazenda */}
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={showModal}
-            onRequestClose={this.closeModal}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Criando Fazenda</Text>
-
-                <Text style={styles.modalLabel}>Nome</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={newFarmTitle}
-                  onChangeText={(text) => this.setState({ newFarmTitle: text })}
-                  placeholder="Digite o nome da fazenda"
-                />
-
-                <Text style={styles.modalLabel}>Descrição</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={newFarmDescription}
-                  onChangeText={(text) => this.setState({ newFarmDescription: text })}
-                  placeholder="Digite a descrição da fazenda"
-                />
-
-                <TouchableOpacity style={styles.buttonModal} onPress={this.createFarm}>
-                  <Text style={styles.buttonText}>Finalizar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.buttonModal} onPress={this.closeModal}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
+          <CreateFarmModal
+            visible={this.state.showModal}
+            onChangeFarmName={(text) => this.setState({ newFarmTitle: text })}
+            onChangeFarmDescription={(text) => this.setState({ newFarmDescription: text })}
+            closeModal={this.closeModal}
+            createFarm={this.createFarm}
+            newFarmTitle={this.state.newFarmTitle}
+            newFarmDescription={this.state.newFarmDescription}
+          />
         </SafeAreaView>
       </SafeAreaProvider>
     );
@@ -248,38 +242,5 @@ const styles = StyleSheet.create({
   lista: {
     marginBottom: height * 0.02,
     width: '80%',
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: width * 0.05,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  modalLabel: {
-    fontSize: width * 0.045,
-    marginBottom: 5,
-  },
-  modalInput: {
-    width: '100%',  // O input ocupará 100% da largura do componente forms
-    height: height * 0.06,  // 6% da altura da tela
-    borderColor: '#4F7942',
-    borderWidth: 1,
-    borderRadius: 3,
-    paddingLeft: 10,
-    marginBottom: height * 0.03,  // Margin abaixo dos inputs será 3% da altura da tela
-    backgroundColor: '#D3D3D3',
   },
 });

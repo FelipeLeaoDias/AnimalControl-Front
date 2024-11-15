@@ -12,3 +12,11 @@ AnimalControl é um aplicativo de gerenciamento bovino desenvolvido em React Nat
 - React Native: Framework para desenvolvimento mobile.
 - Expo: Plataforma para desenvolvimento de apps React Native.
 - JavaScript: Linguagem utilizada no desenvolvimento.
+
+## Observação
+
+- Necessário adicionar .env
+
+```
+BASE_URL='URL do backend'
+```

@@ -2,20 +2,14 @@ import { Text, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Dimensio
 import React, { Component } from 'react';
 import NavBar from '../components/Navbar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import {get} from '../utils/axios'
+import * as SecureStorage from 'expo-secure-store'
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
 
-const DATA = [
-  { id: '1', titulo: 'Categoria A', contmacho: '3', contfemea: '42' },
-  { id: '2', titulo: 'Categoria B', contmacho: '24', contfemea: '352'  },
-  { id: '3', titulo: 'Categoria C', contmacho: '24', contfemea: '3'  },
-  { id: '4', titulo: 'Categoria D', contmacho: '6', contfemea: '4' }, // descricao com 60 caracteres
-  { id: '5', titulo: 'Categoria E', contmacho: '365', contfemea: '422' },
-];
-
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
-    <Text style={[styles.title, { color: textColor }]}>{item.titulo}</Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.name}</Text>
     <Text>{item.descricao}</Text>
   </TouchableOpacity>
 );
@@ -25,8 +19,35 @@ export default class Home extends Component {
     super(props);
     this.state = {
       selectedFarm: null,
+      DATA: []
     };
   }
+
+  refreshCategoryData = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
+    get('/category', token)
+      .then(data => {
+        this.setState({DATA: data})
+      })
+      .catch(err => alert(err.message))
+  }
+
+
+  componentDidMount() {
+    this.refreshCategoryData()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.selectedFarm !== prevState.selectedFarm) {
+      this.refreshCategoryData()
+    }
+  }
+
 
   renderItem = ({ item }) => {
     const { selectedFarm } = this.state;
@@ -56,14 +77,14 @@ export default class Home extends Component {
                     <View style={styles.descriptionContainerText}>
                         <Text style={styles.descriptionLabel}>Categoria:</Text>
                         <Text style={styles.descriptionText}>
-                          {selectedFarm ? selectedFarm.titulo : 'Nenhuma categoria selecionada'}
+                          {selectedFarm ? selectedFarm.name : 'Nenhuma categoria selecionada'}
                         </Text>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                           <Text style={styles.descriptionLabel}>
                             Machos: 
                           </Text>
                           <Text style={styles.descriptionText}>
-                            {selectedFarm ? selectedFarm.contmacho : 'Nenhum macho'}
+                            {selectedFarm ? selectedFarm.males : 'Nenhum macho'}
                           </Text>
                         </View>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -71,7 +92,7 @@ export default class Home extends Component {
                             Femeas: 
                           </Text>
                           <Text style={styles.descriptionText}>
-                            {selectedFarm ? selectedFarm.contfemea : 'Nenhuma femea'}
+                            {selectedFarm ? selectedFarm.females : 'Nenhuma femea'}
                           </Text>
                         </View>
                     </View>
@@ -86,7 +107,7 @@ export default class Home extends Component {
               </View>
 
               <FlatList
-                data={DATA}
+                data={this.state.DATA}
                 renderItem={this.renderItem}
                 keyExtractor={(item) => item.id}
                 extraData={this.state.selectedFarm}
