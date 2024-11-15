@@ -1,7 +1,9 @@
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, Dimensions, ToastAndroid } from 'react-native';
 import React, { Component } from 'react';
 import logo from '../assets/logo.png'; // Certifique-se que o caminho está correto
 import CardInput from '../components/CardInput'
+import { postSignUp } from '../utils/axios';
+import { validateEmail } from '../utils/validate';
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
 
@@ -18,12 +20,19 @@ export default class Cadastro extends Component {
   handleCadastro = () => {
     const { email, senha, senhaconfirm } = this.state;
 
-    // Exemplo simples de validação
-    if ( senha === senhaconfirm) {
-      // Redireciona para a página de Login após o cadastro
-      this.props.navigation.navigate('Login');
-    } else {
-      alert("As senhas não coincidem ou campos estão vazios.");
+    if(validateEmail(email)){
+      if (senha === senhaconfirm) {
+        postSignUp(email, senha).then(data => {
+          ToastAndroid.show("Usuario cadastrado com sucesso!", ToastAndroid.SHORT)
+          this.props.navigation.navigate('Login')
+        }).catch(err => {
+          alert(err.message)
+        })
+      } else {
+        alert("As senhas não coincidem ou campos estão vazios.");
+      }
+    }else{
+      alert("O email submetido é inválido");
     }
   };
 

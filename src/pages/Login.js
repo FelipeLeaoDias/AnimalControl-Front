@@ -2,8 +2,20 @@ import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, Dimensions 
 import React, { Component } from 'react';
 import logo from '../assets/logo.png';
 import CardInput from '../components/CardInput'
+import * as SecureStorage from 'expo-secure-store'
+
+import {postLogin} from '../utils/axios'
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
+
+const doLogin = (email, password, navigation) => {
+  postLogin(email, password).then(resp => {
+    SecureStorage.setItem('token', resp.token)
+    navigation.navigate('Fazendas')
+  }).catch(err => {
+    alert(err.message)
+  })
+}
 
 export default class Login extends Component {
   constructor(props) {
@@ -40,7 +52,8 @@ export default class Login extends Component {
         />
 
         <View style={styles.forms}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
+          <TouchableOpacity style={styles.button} onPress={() => 
+            doLogin(this.state.login, this.state.senha, navigation)}>
             <Text style={styles.buttonText}>Entrar</Text>
           </TouchableOpacity>
         </View>

@@ -16,12 +16,19 @@
     },
     "android": {
       "adaptiveIcon": {
+        "permissions": [
+          "INTERNET"
+        ],
+        "useCleartextTraffic": true,
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
