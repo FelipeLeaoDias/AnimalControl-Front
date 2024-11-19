@@ -9,6 +9,7 @@ import Home from './src/pages/Home';
 import Fazendas from './src/pages/Fazendas';
 import Gestor from './src/pages/Gestor';
 import Financeiro from './src/pages/Financeiro';
+import Animal from './src/pages/Animal';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -17,8 +18,9 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          animationEnabled: false,
-          animationDuration: 1,
+
+          animation: "none",
+          animationDuration: null,
           headerStyle: {
             backgroundColor: '#4D694E', // Define a cor do fundo da navbar
           },
@@ -39,39 +41,28 @@ export default function App() {
           component={Home} 
           options={({ navigation }) => ({ 
             title: 'Fazenda',
-            headerBackVisible: false,
             headerTitleAlign: 'center',
-            headerRight: () => (
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
-                <Text style={styles.buttonText}>Voltar</Text>
-              </TouchableOpacity>
-            ),
           })}
         />
         <Stack.Screen 
           name="Gestor" 
           component={Gestor} 
           options={({ navigation }) => ({
-            headerBackVisible: false,
             headerTitleAlign: 'center',
-            headerRight: () => (
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
-                <Text style={styles.buttonText}>Voltar</Text>
-              </TouchableOpacity>
-            ),
           })}
         />
         <Stack.Screen 
           name="Financeiro" 
           component={Financeiro} 
           options={({ navigation }) => ({
-            headerBackVisible: false,
             headerTitleAlign: 'center',
-            headerRight: () => (
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Fazendas')}>
-                <Text style={styles.buttonText}>Voltar</Text>
-              </TouchableOpacity>
-            ),
+          })}
+        />
+        <Stack.Screen
+          name="Animal"
+          component={Animal}
+          options={({ navigation }) => ({
+            headerTitleAlign: 'center',
           })}
         />
       </Stack.Navigator>

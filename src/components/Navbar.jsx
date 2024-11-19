@@ -22,7 +22,10 @@ const NavBar = () => {
             route.name === item.route && styles.selectedItem,
             screenWidth < 600 && styles.smallScreenItem,
           ]}
-          onPress={() => navigation.navigate(item.route)}
+          onPress={() => {
+            navigation.pop();
+            navigation.navigate(item.route);
+          }}
         >
           <Text
             style={[

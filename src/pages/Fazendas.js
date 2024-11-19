@@ -141,7 +141,6 @@ export default class Fazendas extends Component {
             <Text style={styles.buttonText}>+</Text>
           </TouchableOpacity>
 
-          {/* Modal de criação de fazenda */}
           <CreateFarmModal
             visible={this.state.showModal}
             onChangeFarmName={(text) => this.setState({ newFarmTitle: text })}

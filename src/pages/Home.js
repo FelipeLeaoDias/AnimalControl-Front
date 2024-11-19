@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import NavBar from '../components/Navbar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {get} from '../utils/axios'
+import { CreateCategoriaModal } from '../components/CreateCategoriaModal';
 import * as SecureStorage from 'expo-secure-store'
 
 const { width, height } = Dimensions.get('window');  // Obter as dimensões da tela
@@ -18,7 +19,9 @@ export default class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedFarm: null,
+      selectedCate: null,
+      showModal: false,
+      newCateTitle: '',
       DATA: []
     };
   }
@@ -43,21 +46,40 @@ export default class Home extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.selectedFarm !== prevState.selectedFarm) {
+    if (this.state.selectedCate !== prevState.selectedCate) {
       this.refreshCategoryData()
     }
   }
 
+  openModal = () => {
+    this.setState({ showModal: true });
+  };
+
+  closeModal = () => {
+    this.setState({ showModal: false, newCateTitle: ''});
+  };
+
+  createCate = () => {
+    const { newCateTitle } = this.state;
+    if (newCateTitle) {
+      const newCate = {
+        id: (this.state.DATA.length + 1).toString(), // Gerar um novo id simples
+        name: newCateTitle,
+      };
+      this.state.DATA.push(newCate);
+      this.setState({ selectedCate: newCate, showModal: false, newCateTitle: '', newCateDescription: '' });
+    }
+  };
 
   renderItem = ({ item }) => {
-    const { selectedFarm } = this.state;
-    const backgroundColor = item.id === selectedFarm ? '#4F7942' : '#ABBDAC';
-    const color = item.id === selectedFarm ? 'white' : 'black';
+    const { selectedCate } = this.state;
+    const backgroundColor = item.id === selectedCate ? '#4F7942' : '#ABBDAC';
+    const color = item.id === selectedCate ? 'white' : 'black';
 
     return (
       <Item
         item={item}
-        onPress={() => this.setState({ selectedFarm: item.id, selectedFarm: item })}
+        onPress={() => this.setState({ selectedCate: item.id, selectedCate: item })}
         backgroundColor={backgroundColor}
         textColor={color}
       />
@@ -67,7 +89,7 @@ export default class Home extends Component {
 
   render() {
     const { navigation } = this.props;
-    const { selectedFarm } = this.state;
+    const { selectedCate } = this.state;
     return (
 
       <SafeAreaProvider>
@@ -77,14 +99,14 @@ export default class Home extends Component {
                     <View style={styles.descriptionContainerText}>
                         <Text style={styles.descriptionLabel}>Categoria:</Text>
                         <Text style={styles.descriptionText}>
-                          {selectedFarm ? selectedFarm.name : 'Nenhuma categoria selecionada'}
+                          {selectedCate ? selectedCate.name : 'Nenhuma categoria selecionada'}
                         </Text>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                           <Text style={styles.descriptionLabel}>
                             Machos: 
                           </Text>
                           <Text style={styles.descriptionText}>
-                            {selectedFarm ? selectedFarm.males : 'Nenhum macho'}
+                            {selectedCate ? selectedCate.males : 'Nenhum macho'}
                           </Text>
                         </View>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -92,7 +114,7 @@ export default class Home extends Component {
                             Femeas: 
                           </Text>
                           <Text style={styles.descriptionText}>
-                            {selectedFarm ? selectedFarm.females : 'Nenhuma femea'}
+                            {selectedCate ? selectedCate.females : 'Nenhuma femea'}
                           </Text>
                         </View>
                     </View>
@@ -100,7 +122,7 @@ export default class Home extends Component {
                         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
                             <Text style={styles.buttonText}>Editar</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Animal')}>
                             <Text style={styles.buttonText}>Ir</Text>
                         </TouchableOpacity>
                     </View>
@@ -110,16 +132,22 @@ export default class Home extends Component {
                 data={this.state.DATA}
                 renderItem={this.renderItem}
                 keyExtractor={(item) => item.id}
-                extraData={this.state.selectedFarm}
+                extraData={this.state.selectedCate}
                 style={styles.lista}
               />
 
-              <TouchableOpacity
-                style={styles.buttonPlus}
-                onPress={() => navigation.navigate('Fazendas')}
-              >
+              <TouchableOpacity style={styles.buttonPlus} onPress={this.openModal}>
                 <Text style={styles.buttonText}>+</Text>
               </TouchableOpacity>
+
+              <CreateCategoriaModal
+                visible={this.state.showModal}
+                onChangeCateName={(text) => this.setState({ newCateTitle: text })}
+                closeModal={this.closeModal}
+                createCate={this.createCate}
+                newCateTitle={this.state.newCateTitle}
+              />
+
             </SafeAreaView>
         </SafeAreaProvider>
 
