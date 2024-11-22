@@ -51,34 +51,20 @@ export default class Animal extends Component {
       .catch(err => alert(err.message))
   }
 
-  searchName = async () => {
+  searchAnimal = async () => {
     const token = await SecureStorage.getItemAsync("token")
     if(token == null){
       alert("Você não está autenticado")
       await SecureStorage.deleteItemAsync(token)
       this.props.navigation.pop()
     }
-    get('/animal/name='+this.selectedCate.id, token)
+    get('/animal/'+this.selectedCate.id+'/query?name='+this.state.searchNameText+'&label='+this.state.searchLabelText, token)
       .then(data => {
+        console.log(data)
         this.setState({animals: data})
       })
       .catch(err => alert(err.message))
   }
-
-  searchLabel = async () => {
-    const token = await SecureStorage.getItemAsync("token")
-    if(token == null){
-      alert("Você não está autenticado")
-      await SecureStorage.deleteItemAsync(token)
-      this.props.navigation.pop()
-    }
-    get('/animal/?label='+this.selectedCate.id, token)
-      .then(data => {
-        this.setState({animals: data})
-      })
-      .catch(err => alert(err.message))
-  }
-
 
   componentDidMount() {
     this.refreshCatleData()
@@ -95,7 +81,7 @@ export default class Animal extends Component {
           <TextInput style={styles.input} placeholder="Buscar pelo Brinco"
           onChangeText={(text) => this.setState({ searchLabelText: text })}
           />
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={()=>{this.searchAnimal()}}>
             <Text style={styles.buttonText}>Buscar</Text>
           </TouchableOpacity>
         </View>
