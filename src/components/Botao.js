@@ -14,7 +14,7 @@ const Botao = ({ onPress, style, children }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#869687',
+    backgroundColor: '#4D694E',
     paddingVertical: height * 0.02,
     borderRadius: 5,
     alignItems: 'center',

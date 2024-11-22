@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import * as SecureStorage from 'expo-secure-store'
 import {get} from '../utils/axios'
+import Botao from '../components/Botao';
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
 
@@ -31,7 +32,6 @@ export default class Animal extends Component {
       >
         <Text style={styles.cell}>{item.label}</Text>
         <Text style={styles.cell}>{item.name}</Text>
-        <Text style={styles.cell}>{item.color}</Text>
         <Text style={styles.cell}>{item.date_of_birth}</Text>
       </TouchableOpacity>
     );
@@ -71,9 +71,11 @@ export default class Animal extends Component {
   }
 
   render() {
+    const { navigation } = this.props;
     return (
       <View style={styles.container}>
         <View style={styles.forms}>
+          <Botao onPress={() => navigation.navigate('CreateAnimal')}>Registrar Animal</Botao>
           <Text style={styles.label}>Animal</Text>
           <TextInput style={styles.input} placeholder="Buscar pelo Nome"
           onChangeText={(text) => this.setState({ searchNameText: text })}
@@ -81,9 +83,7 @@ export default class Animal extends Component {
           <TextInput style={styles.input} placeholder="Buscar pelo Brinco"
           onChangeText={(text) => this.setState({ searchLabelText: text })}
           />
-          <TouchableOpacity style={styles.button} onPress={()=>{this.searchAnimal()}}>
-            <Text style={styles.buttonText}>Buscar</Text>
-          </TouchableOpacity>
+          <Botao onPress={()=>{this.searchAnimal()}}>Buscar</Botao>
         </View>
 
         <FlatList
@@ -94,7 +94,6 @@ export default class Animal extends Component {
             <View style={styles.headerRow}>
               <Text style={[styles.cell, styles.headerText]}>Brinco</Text>
               <Text style={[styles.cell, styles.headerText]}>Nome</Text>
-              <Text style={[styles.cell, styles.headerText]}>Cor</Text>
               <Text style={[styles.cell, styles.headerText]}>Nascimento</Text>
             </View>
           }
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: height * 0.06,
-    borderColor: '#4F7942',
+    borderColor: '#4D694E',
     borderWidth: 1,
     borderRadius: 3,
     paddingLeft: 10,
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D3D3D3',
   },
   button: {
-    backgroundColor: '#4F7942',
+    backgroundColor: '#4D694E',
     paddingVertical: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -142,8 +141,8 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
-    backgroundColor: '#4F7942',
-    paddingVertical: 10,
+    backgroundColor: '#4D694E',
+    paddingVertical: 15,
     borderRadius: 5,
     marginBottom: 10,
   },
