@@ -122,7 +122,7 @@ export default class Home extends Component {
                         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
                             <Text style={styles.buttonText}>Editar</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Animal')}>
+                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Animal', {selectedCate})}>
                             <Text style={styles.buttonText}>Ir</Text>
                         </TouchableOpacity>
                     </View>

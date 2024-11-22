@@ -1,28 +1,26 @@
 import React, { Component } from 'react';
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
+import * as SecureStorage from 'expo-secure-store'
+import {get} from '../utils/axios'
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
 
 export default class Animal extends Component {
   constructor(props) {
     super(props);
+    this.selectedCate = this.props.route.params.selectedCate
+    console.log(this.selectedCate)
     this.state = {
       selectedAnimal: null,
-      animals: [
-        { brinco: 1, nome: 'Exemplo1', cor: 'Branco', nascimento: '01/01/2000' },
-        { brinco: 2, nome: 'Exemplo2', cor: 'Vermelho', nascimento: '01/01/2000' },
-        { brinco: 3, nome: 'Exemplo3', cor: 'Branco', nascimento: '01/01/2000' },
-        { brinco: 4, nome: 'Exemplo4', cor: 'Preto', nascimento: '01/01/2000' },
-        { brinco: 5, nome: 'Exemplo5', cor: 'Branco', nascimento: '01/01/2000' },
-        { brinco: 6, nome: 'Exemplo6', cor: 'Branco', nascimento: '01/01/2000' },
-        { brinco: 7, nome: 'Exemplo7', cor: 'Branco', nascimento: '01/01/2000' },
-      ],
+      animals: [],
+      searchNameText: "",
+      searchLabelText: ""
     };
   }
 
   handleAnimalPress = (animal) => {
     this.setState({ selectedAnimal: animal });
-    Alert.alert('Animal Selecionado', `Brinco: ${animal.brinco}, Nome: ${animal.nome}`);
+    Alert.alert('Animal Selecionado', `Brinco: ${animal.label}, Nome: ${animal.name}`);
   };
 
   renderTableRow = ({ item }) => {
@@ -31,22 +29,72 @@ export default class Animal extends Component {
         style={styles.row}
         onPress={() => this.handleAnimalPress(item)}
       >
-        <Text style={styles.cell}>{item.brinco}</Text>
-        <Text style={styles.cell}>{item.nome}</Text>
-        <Text style={styles.cell}>{item.cor}</Text>
-        <Text style={styles.cell}>{item.nascimento}</Text>
+        <Text style={styles.cell}>{item.label}</Text>
+        <Text style={styles.cell}>{item.name}</Text>
+        <Text style={styles.cell}>{item.color}</Text>
+        <Text style={styles.cell}>{item.date_of_birth}</Text>
       </TouchableOpacity>
     );
   };
+
+  refreshCatleData = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
+    get('/animal/'+this.selectedCate.id, token)
+      .then(data => {
+        this.setState({animals: data})
+      })
+      .catch(err => alert(err.message))
+  }
+
+  searchName = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
+    get('/animal/name='+this.selectedCate.id, token)
+      .then(data => {
+        this.setState({animals: data})
+      })
+      .catch(err => alert(err.message))
+  }
+
+  searchLabel = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
+    get('/animal/?label='+this.selectedCate.id, token)
+      .then(data => {
+        this.setState({animals: data})
+      })
+      .catch(err => alert(err.message))
+  }
+
+
+  componentDidMount() {
+    this.refreshCatleData()
+  }
 
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.forms}>
           <Text style={styles.label}>Animal</Text>
-          <TextInput style={styles.input} placeholder="Buscar pelo Nome" />
-          <TextInput style={styles.input} placeholder="Buscar pela Numeração" />
-          <TextInput style={styles.input} placeholder="Buscar pela Descrição" />
+          <TextInput style={styles.input} placeholder="Buscar pelo Nome"
+          onChangeText={(text) => this.setState({ searchNameText: text })}
+          />
+          <TextInput style={styles.input} placeholder="Buscar pelo Brinco"
+          onChangeText={(text) => this.setState({ searchLabelText: text })}
+          />
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Buscar</Text>
           </TouchableOpacity>
@@ -55,7 +103,7 @@ export default class Animal extends Component {
         <FlatList
           data={this.state.animals}
           renderItem={this.renderTableRow}
-          keyExtractor={(item) => item.brinco.toString()}
+          keyExtractor={(item) => item.id}
           ListHeaderComponent={
             <View style={styles.headerRow}>
               <Text style={[styles.cell, styles.headerText]}>Brinco</Text>

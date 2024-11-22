@@ -2,8 +2,7 @@ const axios = require('axios').default
 import {BASE_URL} from '@env'
 
 const api = axios.create({
-  baseURL: BASE_URL,
-  // headers: {'API-KEY': API_KEY}
+  baseURL: 'http://192.168.68.113:3000/',
 })
 
 
