@@ -2,7 +2,7 @@ const axios = require('axios').default
 import {BASE_URL} from '@env'
 
 const api = axios.create({
-  baseURL: 'http://192.168.68.113:3000/',
+  baseURL: 'http://50.116.40.31:3000/',
 })
 
 
@@ -30,5 +30,14 @@ export const postLogin = async (email, password) => {
 
 export const postSignUp = async (email, password) => {
   return await postUnauth('/user', {email, password})
+}
+
+export const postAuth = async (route, data, token) => {
+  try{
+    const response = await api.post(route,data, {headers:{"Authorization":`Bearer ${token}`}})
+    return response.data
+  }catch(err){
+    throw new Error(err.response.data.message)
+  }
 }
 

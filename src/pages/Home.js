@@ -2,7 +2,7 @@ import { Text, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Dimensio
 import React, { Component } from 'react';
 import NavBar from '../components/Navbar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import {get} from '../utils/axios'
+import {get, postAuth} from '../utils/axios'
 import { CreateCategoriaModal } from '../components/CreateCategoriaModal';
 import * as SecureStorage from 'expo-secure-store'
 
@@ -59,15 +59,23 @@ export default class Home extends Component {
     this.setState({ showModal: false, newCateTitle: ''});
   };
 
-  createCate = () => {
+  createCate = async () => {
     const { newCateTitle } = this.state;
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
     if (newCateTitle) {
-      const newCate = {
-        id: (this.state.DATA.length + 1).toString(), // Gerar um novo id simples
-        name: newCateTitle,
-      };
-      this.state.DATA.push(newCate);
-      this.setState({ selectedCate: newCate, showModal: false, newCateTitle: '', newCateDescription: '' });
+      postAuth('/category', 
+        {name: newCateTitle},
+        token
+      ).then(data => {
+        this.closeModal()
+        this.refreshCategoryData()
+      })
+      .catch(err => alert(err.message))
     }
   };
 

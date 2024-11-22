@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import {CreateFarmModal} from '../components/CreateFarmModal'
-import {get} from '../utils/axios'
+import {get, postAuth} from '../utils/axios'
 import * as SecureStorage from 'expo-secure-store'
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
@@ -46,7 +46,10 @@ export default class Fazendas extends Component {
       this.props.navigation.pop()
     }
     get('/farm', token)
-      .then(data => this.setState({DATA: data}))
+      .then(data => {
+        console.log(data) 
+        this.setState({DATA: data}
+      )})
       .catch(err => alert(err.message))
   }
 
@@ -72,16 +75,23 @@ export default class Fazendas extends Component {
   };
 
   // Função para finalizar a criação da fazenda
-  createFarm = () => {
+  createFarm = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if(token == null){
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
+    }
     const { newFarmTitle, newFarmDescription } = this.state;
     if (newFarmTitle && newFarmDescription) {
-      const newFarm = {
-        id: (this.state.DATA.length + 1).toString(), // Gerar um novo id simples
-        name: newFarmTitle,
-        description: newFarmDescription,
-      };
-      this.state.DATA.push(newFarm);
-      this.setState({ selectedFarm: newFarm, showModal: false, newFarmTitle: '', newFarmDescription: '' });
+      postAuth('/farm', 
+        {name: newFarmTitle, description: newFarmDescription},
+        token
+      ).then(data => {
+        this.closeModal()
+        this.refreshFarmData()
+      })
+      .catch(err => alert(err.message))
     }
   };
 
