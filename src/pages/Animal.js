@@ -98,6 +98,9 @@ export default class Animal extends Component {
             </View>
           }
         />
+
+      <Botao onPress={() => navigation.navigate('PerfilAnimal')}>PerfilAnimal</Botao>
+
       </View>
     );
   }

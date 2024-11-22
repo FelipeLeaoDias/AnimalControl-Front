@@ -11,6 +11,7 @@ import Gestor from './src/pages/Gestor';
 import Financeiro from './src/pages/Financeiro';
 import Animal from './src/pages/Animal';
 import CreateAnimal from './src/pages/CreateAnimal';
+import PerfilAnimal from './src/pages/PerfilAnimal';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -70,6 +71,14 @@ export default function App() {
           title="Registro"
           name="CreateAnimal"
           component={CreateAnimal}
+          options={({ navigation }) => ({
+            headerTitleAlign: 'center',
+          })}
+        />
+        <Stack.Screen
+          title="Perfil"
+          name="PerfilAnimal"
+          component={PerfilAnimal}
           options={({ navigation }) => ({
             headerTitleAlign: 'center',
           })}
