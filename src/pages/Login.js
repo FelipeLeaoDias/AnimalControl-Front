@@ -58,12 +58,6 @@ export default class Login extends Component {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.forms}>
-        <TouchableOpacity style={styles.registerContainer} onPress={() => navigation.navigate('Fazendas')}>
-          <Text style={styles.registerText}>SemLogin</Text>
-        </TouchableOpacity>
-        </View>
-
         <Text>Não possui conta?</Text>
         <TouchableOpacity style={styles.registerContainer} onPress={() => navigation.navigate('Cadastro')}>
           <Text style={styles.registerText}>Cadastre-se!</Text>
