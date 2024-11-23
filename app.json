@@ -22,13 +22,19 @@
         "useCleartextTraffic": true,
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.xfb.AnimalControl"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f9ee4f06-d5d8-40a4-910c-21d189cb247a"
+      }
+    }
   }
 }

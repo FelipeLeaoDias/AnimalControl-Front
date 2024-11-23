@@ -2,7 +2,7 @@ const axios = require('axios').default
 import {BASE_URL} from '@env'
 
 const api = axios.create({
-  baseURL: 'http://192.168.68.101:3000',
+  baseURL: 'http://animalcontrol.0xfb.xyz:3000',
 })
 
 
