@@ -111,7 +111,12 @@ export default class Animal extends Component {
           }
         />
 
-        <Botao onPress={() => navigation.navigate('PerfilAnimal')}>PerfilAnimal</Botao>
+        <Botao onPress={() => {
+          if(this.state.selectedAnimal)
+            navigation.navigate('PerfilAnimal', {selectedAnimal: this.state.selectedAnimal})
+          else
+            alert("Selecione um animal")
+        }}>PerfilAnimal</Botao>
 
       </View>
     );

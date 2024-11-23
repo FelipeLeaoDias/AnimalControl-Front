@@ -1,72 +1,49 @@
 import React, { Component } from 'react';
 import { Text, StyleSheet, View, ScrollView, TextInput, Dimensions, Alert, TouchableOpacity } from 'react-native';
-import Botao from '../components/Botao';
+import * as SecureStorage from 'expo-secure-store'
+import { get } from '../utils/axios'
 
 const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
 
 export default class PerfilAnimal extends Component {
   constructor(props) {
     super(props);
-    // Criando um objeto para armazenar as informações do animal
+    this.selectedAnimal = this.props.route.params.selectedAnimal;
+    console.log(this.selectedAnimal)
     this.state = {
       animal: {
-        nome: 'Vakinha',
-        numeroBrinco: '61',
+        name: 'Vakinha',
+        label: '61',
         status: 'vivo', // Pode ser 'vivo', 'morto', 'vendido'
-        sexo: 'Fêmea',
-        raca: 'Girolando',
-        cor: 'Marrom',
-        dataNascimento: '11/12/2015',
-        dataMorte: '12/11/2020', // Para status 'morto'
+        sex: 'Fêmea',
+        race: 'Girolando',
+        color: 'Marrom',
+        date_of_birth: '11/12/2015',
+        date_of_death: '12/11/2020', // Para status 'morto'
         dataVenda: '11/12/2018', // Para status 'vendido'
-        descricao: `O animal "Vakinha" é um excelente exemplar da raça Girolando, com uma pelagem marrom predominante. Ele tem um temperamento calmo e se adapta bem ao ambiente rural. Além disso, sua produção de leite é uma das melhores na fazenda, sendo constantemente monitorada para garantir que seus parâmetros de saúde sejam mantidos.`,
-        mediaLeiteIndividual: '12', // Sem o "L" para facilitar a edição
-        mediaLeiteFazenda: '10L',
-        mediaLeiteCategoria: '11L',
-        pai: { nome: 'Boazinho', numeroBrinco: '45' }, // Exemplo de pai
-        mae: { nome: 'Margarida', numeroBrinco: '32' }, // Exemplo de mãe
-        filhos: [
-          { nome: 'Filhote A', numeroBrinco: '100' },
-          { nome: 'Filhote B', numeroBrinco: '101' },
-          { nome: 'Filhote A', numeroBrinco: '100' },
-          { nome: 'Filhote B', numeroBrinco: '101' },
-        ], // Lista de filhos
+        description: `O animal "Vakinha" é um excelente exemplar da raça Girolando, com uma pelagem marrom predominante. Ele tem um temperamento calmo e se adapta bem ao ambiente rural. Além disso, sua produção de leite é uma das melhores na fazenda, sendo constantemente monitorada para garantir que seus parâmetros de saúde sejam mantidos.`,
+        average_production: '12', // Sem o "L" para facilitar a edição
       },
-      isEditingMedia: false, // Flag para controlar quando estamos no modo de edição
-      novoValorMediaLeite: '', // Valor temporário para a nova média de leite
     };
   }
 
-  // Função para alternar o modo de edição
-  toggleEditMedia = () => {
-    this.setState(prevState => ({
-      isEditingMedia: !prevState.isEditingMedia,
-      novoValorMediaLeite: this.state.animal.mediaLeiteIndividual, // Preencher com o valor atual
-    }));
-  };
-
-  // Função para atualizar a média de leite individual
-  handleSaveMediaLeite = () => {
-    const { novoValorMediaLeite } = this.state;
-    if (novoValorMediaLeite.trim() === '') {
-      Alert.alert('Erro', 'O valor da média de leite não pode estar vazio.');
-      return;
+  refreshAnimalData = async () => {
+    const token = await SecureStorage.getItemAsync("token")
+    if (token == null) {
+      alert("Você não está autenticado")
+      await SecureStorage.deleteItemAsync(token)
+      this.props.navigation.pop()
     }
-
-    // Atualizar o estado do animal com o novo valor (adicionando "L" automaticamente)
-    this.setState(prevState => ({
-      animal: {
-        ...prevState.animal,
-        mediaLeiteIndividual: novoValorMediaLeite + 'L', // Adicionando "L" automaticamente
-      },
-      isEditingMedia: false, // Sair do modo de edição
-    }));
-  };
-
-  // Função para tratar o clique no card do pai, mãe ou filho
-  handleCardClick = (animal) => {
-    Alert.alert('Animal Selecionado', `Você selecionou ${animal.nome} (Brinco: ${animal.numeroBrinco})`);
-  };
+    get('/animal/find/' + this.selectedAnimal.id, token)
+      .then(data => {
+        this.setState({ animal: data })
+      })
+      .catch(err => alert(err.message))
+  }
+  
+  componentDidMount() {
+    this.refreshAnimalData()
+  }
 
   render() {
     const { animal, isEditingMedia, novoValorMediaLeite } = this.state;
@@ -78,7 +55,7 @@ export default class PerfilAnimal extends Component {
     // Mostrar campo de data apenas quando o status for 'morto' ou 'vendido'
     if (animal.status === 'morto') {
       dataLabel = 'Data de Morte:';
-      dataValue = animal.dataMorte;
+      dataValue = animal.date_of_death;
     } else if (animal.status === 'vendido') {
       dataLabel = 'Data de Venda:';
       dataValue = animal.dataVenda;
@@ -87,44 +64,44 @@ export default class PerfilAnimal extends Component {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer}>
         <View style={styles.forms}>
-          {/* Nome e Brinco */}
+          {/* name e Brinco */}
           <View style={styles.row}>
-            <Text style={styles.label}>Nome:</Text>
-            <Text style={styles.value}>{animal.nome}</Text>
+            <Text style={styles.label}>name:</Text>
+            <Text style={styles.value}>{animal.name}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Número Brinco:</Text>
-            <Text style={styles.value}>{animal.numeroBrinco}</Text>
+            <Text style={styles.value}>{animal.label}</Text>
           </View>
 
-          {/* Status e Sexo */}
+          {/* Status e sex */}
           <View style={styles.row}>
             <Text style={styles.label}>Status:</Text>
             <Text style={styles.value}>{animal.status === 'morto' ? 'Morto' : animal.status === 'vendido' ? 'Vendido' : 'Vivo'}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Sexo:</Text>
-            <Text style={styles.value}>{animal.sexo}</Text>
+            <Text style={styles.label}>sex:</Text>
+            <Text style={styles.value}>{animal.sex}</Text>
           </View>
 
-          {/* Raça e Cor */}
+          {/* Raça e color */}
           <View style={styles.row}>
             <Text style={styles.label}>Raça:</Text>
-            <Text style={styles.value}>{animal.raca}</Text>
+            <Text style={styles.value}>{animal.race}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Cor:</Text>
-            <Text style={styles.value}>{animal.cor}</Text>
+            <Text style={styles.value}>{animal.color}</Text>
           </View>
 
           {/* Data de Nascimento */}
           <View style={styles.row}>
             <Text style={styles.label}>Data de Nascimento:</Text>
-            <Text style={styles.value}>{animal.dataNascimento}</Text>
+            <Text style={styles.value}>{animal.date_of_birth}</Text>
           </View>
 
           {/* Exibe a Data de Morte ou Venda somente se o status for 'morto' ou 'vendido' */}
-          {(animal.status === 'morto' || animal.status === 'vendido') && (
+          {(animal.status === 'dead' || animal.status === 'selled') && (
             <View style={styles.row}>
               <Text style={styles.label}>{dataLabel}</Text>
               <Text style={styles.value}>{dataValue}</Text>
@@ -134,7 +111,7 @@ export default class PerfilAnimal extends Component {
           {/* Descrição */}
           <Text style={styles.label}>Descrição:</Text>
           <View style={styles.descriptionBox}>
-            <Text style={styles.descriptionText}>{animal.descricao}</Text>
+            <Text style={styles.descriptionText}>{animal.description}</Text>
           </View>
 
           {/* Divisória Verde */}
@@ -143,7 +120,7 @@ export default class PerfilAnimal extends Component {
           <Text style={styles.divisor}>Informações Gerenciais</Text>
 
           {/* Média de Leite Individual (aparece apenas para fêmeas) */}
-          {animal.sexo === 'Fêmea' && (
+          {animal.sex.toLowerCase() === 'female' && (
             <>
               <View style={styles.row}>
                 <Text style={styles.label}>Média de Leite Individual:</Text>
@@ -155,56 +132,12 @@ export default class PerfilAnimal extends Component {
                     keyboardType="numeric"
                   />
                 ) : (
-                  <Text style={styles.value}>{animal.mediaLeiteIndividual}</Text> // Exibe o "L" automaticamente
+                  <Text style={styles.value}>{animal.average_production}</Text> // Exibe o "L" automaticamente
                 )}
               </View>
 
-              <Botao onPress={this.toggleEditMedia}>
-                {isEditingMedia ? 'Cancelar Edição' : 'Editar Média Individual'}
-              </Botao>
-              {isEditingMedia && (
-                <Botao onPress={this.handleSaveMediaLeite}>
-                  Salvar Média Individual
-                </Botao>
-              )}
             </>
           )}
-
-          {/* Média de Leite da Fazenda */}
-          <View style={styles.row}>
-            <Text style={styles.label}>Média de Leite da Fazenda:</Text>
-            <Text style={styles.value}>{animal.mediaLeiteFazenda}</Text>
-          </View>
-
-          {/* Média de Leite da Categoria */}
-          <View style={styles.row}>
-            <Text style={styles.label}>Média de Leite da Categoria:</Text>
-            <Text style={styles.value}>{animal.mediaLeiteCategoria}</Text>
-          </View>
-
-          {/* Listas de Pais e Filhos */}
-          <View style={styles.cardsContainer}>
-            <Text style={styles.cardTitle}>Pais</Text>
-            <View style={styles.cardList}>
-              {/* Card do Pai */}
-              <TouchableOpacity style={styles.card} onPress={() => this.handleCardClick(animal.pai)}>
-                <Text style={styles.cardText}>Pai: {animal.pai.nome} - Brinco: {animal.pai.numeroBrinco}</Text>
-              </TouchableOpacity>
-              {/* Card da Mãe */}
-              <TouchableOpacity style={styles.card} onPress={() => this.handleCardClick(animal.mae)}>
-                <Text style={styles.cardText}>Mãe: {animal.mae.nome} - Brinco: {animal.mae.numeroBrinco}</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.cardTitle}>Filhos</Text>
-            <View style={styles.cardList}>
-              {animal.filhos.map((filho, index) => (
-                <TouchableOpacity key={index} style={styles.card} onPress={() => this.handleCardClick(filho)}>
-                  <Text style={styles.cardText}>Filho: {filho.nome} Brinco: {filho.numeroBrinco}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
 
         </View>
       </ScrollView>
@@ -271,7 +204,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#4D694E', // Cor verde para a divisória
+    backgroundColor: '#4D694E', // cor verde para a divisória
     marginVertical: 20,
   },
   cardsContainer: {

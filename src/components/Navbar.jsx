@@ -4,9 +4,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 const NavBar = () => {
   const navItems = [
-    { name: 'Gestor', route: 'Gestor' },
+    // { name: 'Gestor', route: 'Gestor' },
     { name: 'Fazenda', route: 'Home' },
-    { name: 'Financeiro', route: 'Financeiro' }
+    // { name: 'Financeiro', route: 'Financeiro' }
   ];
   const screenWidth = Dimensions.get('window').width;
   const navigation = useNavigation();
