@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import * as SecureStorage from 'expo-secure-store'
-import {get} from '../utils/axios'
+import { get } from '../utils/axios'
 import Botao from '../components/Botao';
 
-const { width, height } = Dimensions.get('window'); // Obter as dimensões da tela
+const { width, height } = Dimensions.get('window');
 
 export default class Animal extends Component {
   constructor(props) {
     super(props);
-    this.selectedCate = this.props.route.params.selectedCate
-    console.log(this.selectedCate)
+    this.selectedCate = this.props.route.params.selectedCate;
     this.state = {
       selectedAnimal: null,
       animals: [],
@@ -39,35 +38,47 @@ export default class Animal extends Component {
 
   refreshCatleData = async () => {
     const token = await SecureStorage.getItemAsync("token")
-    if(token == null){
+    if (token == null) {
       alert("Você não está autenticado")
       await SecureStorage.deleteItemAsync(token)
       this.props.navigation.pop()
     }
-    get('/animal/'+this.selectedCate.id, token)
+    get('/animal/' + this.selectedCate.id, token)
       .then(data => {
-        this.setState({animals: data})
+        this.setState({ animals: data })
       })
       .catch(err => alert(err.message))
   }
 
   searchAnimal = async () => {
     const token = await SecureStorage.getItemAsync("token")
-    if(token == null){
+    if (token == null) {
       alert("Você não está autenticado")
       await SecureStorage.deleteItemAsync(token)
       this.props.navigation.pop()
     }
-    get('/animal/'+this.selectedCate.id+'/query?name='+this.state.searchNameText+'&label='+this.state.searchLabelText, token)
+    get('/animal/' + this.selectedCate.id + '/query?name=' + this.state.searchNameText + '&label=' + this.state.searchLabelText, token)
       .then(data => {
         console.log(data)
-        this.setState({animals: data})
+        this.setState({ animals: data })
       })
       .catch(err => alert(err.message))
   }
 
   componentDidMount() {
-    this.refreshCatleData()
+    // Ensure refresh is called when the screen is focused
+    this.refreshCatleData();
+
+    this.focusListener = this.props.navigation.addListener('focus', () => {
+      this.refreshCatleData(); // Refresh when the screen is focused again (e.g., after navigation.pop())
+    });
+  }
+
+  componentWillUnmount() {
+    // Clean up the listener when the component is unmounted
+    if (this.focusListener) {
+      this.focusListener();
+    }
   }
 
   render() {
@@ -75,15 +86,16 @@ export default class Animal extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.forms}>
-          <Botao onPress={() => navigation.navigate('CreateAnimal')}>Registrar Animal</Botao>
+          <Botao onPress={() => {
+            navigation.navigate('CreateAnimal', { selectedCate: this.selectedCate })}}>Registrar Animal</Botao>
           <Text style={styles.label}>Animal</Text>
           <TextInput style={styles.input} placeholder="Buscar pelo Nome"
-          onChangeText={(text) => this.setState({ searchNameText: text })}
+            onChangeText={(text) => this.setState({ searchNameText: text })}
           />
           <TextInput style={styles.input} placeholder="Buscar pelo Brinco"
-          onChangeText={(text) => this.setState({ searchLabelText: text })}
+            onChangeText={(text) => this.setState({ searchLabelText: text })}
           />
-          <Botao onPress={()=>{this.searchAnimal()}}>Buscar</Botao>
+          <Botao onPress={() => { this.searchAnimal() }}>Buscar</Botao>
         </View>
 
         <FlatList
@@ -99,7 +111,7 @@ export default class Animal extends Component {
           }
         />
 
-      <Botao onPress={() => navigation.navigate('PerfilAnimal')}>PerfilAnimal</Botao>
+        <Botao onPress={() => navigation.navigate('PerfilAnimal')}>PerfilAnimal</Botao>
 
       </View>
     );
@@ -116,7 +128,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: width * 0.045, // Tornando a fonte responsiva
+    fontSize: width * 0.045, 
     color: '#000',
     fontWeight: 'bold',
     marginBottom: 10,
@@ -167,3 +179,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

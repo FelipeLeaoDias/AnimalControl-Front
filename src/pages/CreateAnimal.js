@@ -1,38 +1,43 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RadioButton from '../components/RadioButton';
 import Botao from '../components/Botao';
-import * as ImagePicker from 'expo-image-picker'; // Usando Expo Image Picker
+import * as ImagePicker from 'expo-image-picker';
+import { postAuth } from '../utils/axios';
+import * as SecureStorage from 'expo-secure-store'
 
 const { width, height } = Dimensions.get('window');
 
 export default class CreateAnimal extends Component {
   constructor(props) {
     super(props);
+    this.selectedCate = this.props.route.params.selectedCate
     this.state = {
-      searchNameText: '',
-      searchLabelText: '', 
-      descriptionText: '', 
-      gender: '', 
-      status: '', 
-      birthDate: new Date(), 
-      deathDate: new Date(), 
-      saleDate: new Date(), 
-      milkAverage: '', 
+      average_production: '',
+      name: '',
+      label: '',
+      race: '',
+      color: '',
+      description: '',
+      gender: '',
+      status: '',
+      birthDate: new Date().toISOString().slice(0, 10), // Use Date object
+      deathDate: new Date().toISOString().slice(0, 10),
+      saleDate: new Date().toISOString().slice(0, 10),
       showBirthDatePicker: false,
       showDeathDatePicker: false,
       showSaleDatePicker: false,
-      photo: null, // Armazenando a foto selecionada
+      photo: null,
     };
   }
 
-  // Função para selecionar a foto
+  // Image Picker Function
   pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1], // Força a imagem a ser quadrada
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -42,105 +47,175 @@ export default class CreateAnimal extends Component {
   };
 
   handleDateChange(event, selectedDate, type) {
-    const currentDate = selectedDate || this.state[type];
-    this.setState({ [type]: currentDate, [type === 'birthDate' ? 'showBirthDatePicker' : type === 'deathDate' ? 'showDeathDatePicker' : 'showSaleDatePicker']: false });
+    if (!selectedDate) {
+      // User canceled the picker
+      this.setState({
+        [type === 'birthDate' ? 'showBirthDatePicker' : type === 'deathDate' ? 'showDeathDatePicker' : 'showSaleDatePicker']: false,
+      });
+      return;
+    }
+
+    const formattedDate = selectedDate.toISOString().slice(0, 10);
+    this.setState({
+      [type]: formattedDate,
+      [type === 'birthDate' ? 'showBirthDatePicker' : type === 'deathDate' ? 'showDeathDatePicker' : 'showSaleDatePicker']: false,
+    });
   }
+
+  postAnimal = async () => {
+
+    const token = await SecureStorage.getItemAsync("token");
+    if (!token) {
+      alert("Você não está autenticado");
+      await SecureStorage.deleteItemAsync("token");
+      this.props.navigation.pop();
+      return;
+    }
+
+    const {
+      name,
+      label,
+      description,
+      gender,
+      birthDate,
+      deathDate,
+      race,
+      color,
+      average_production,
+    } = this.state;
+
+    if(!gender){
+      alert("Escolha o sexo do animal")
+      return;
+    }
+    postAuth(
+      '/animal',
+      {
+        name,
+        label,
+        description,
+        sex: gender,
+        race,
+        color,
+        dateOfBirth: birthDate,
+        dateOfDeath: deathDate,
+        averageProduction: parseInt(average_production),
+        categoryId: this.selectedCate.id,
+      },
+      token
+    )
+      .then((data) => {
+        this.props.navigation.pop();
+      })
+      .catch((err) => {
+        alert(err.message);
+      });
+  };
 
   render() {
     return (
       <ScrollView style={styles.container}>
         <View style={styles.forms}>
-          {/* Campo de Nome */}
           <Text style={styles.label}>Nome</Text>
-          <TextInput 
-            style={styles.input} 
+          <TextInput
+            style={styles.input}
             placeholder="Digite o Nome"
-            onChangeText={(text) => this.setState({ searchNameText: text })}
+            onChangeText={(text) => this.setState({ name: text })}
           />
 
-          {/* Campo de Gênero com RadioButton */}
           <Text style={styles.label}>Gênero</Text>
           <View style={styles.radioButtonGroup}>
-            <RadioButton 
-              label="Macho" 
-              value="macho" 
-              selectedValue={this.state.gender} 
-              onSelect={(value) => this.setState({ gender: value })} 
+            <RadioButton
+              label="Macho"
+              value="male"
+              selectedValue={this.state.gender}
+              onSelect={(value) => this.setState({ gender: value })}
             />
-            <RadioButton 
-              label="Fêmea" 
-              value="femea" 
-              selectedValue={this.state.gender} 
-              onSelect={(value) => this.setState({ gender: value })} 
+            <RadioButton
+              label="Fêmea"
+              value="female"
+              selectedValue={this.state.gender}
+              onSelect={(value) => this.setState({ gender: value })}
             />
           </View>
 
-          {/* Campo de Status com RadioButton */}
           <Text style={styles.label}>Status</Text>
           <View style={styles.radioButtonGroup}>
-            <RadioButton 
-              label="Ativo" 
-              value="ativo" 
-              selectedValue={this.state.status} 
-              onSelect={(value) => this.setState({ status: value })} 
+            <RadioButton
+              label="Ativo"
+              value="ativo"
+              selectedValue={this.state.status}
+              onSelect={(value) => this.setState({ status: value })}
             />
-            <RadioButton 
-              label="Inativo" 
-              value="inativo" 
-              selectedValue={this.state.status} 
-              onSelect={(value) => this.setState({ status: value })} 
+            <RadioButton
+              label="Inativo"
+              value="inativo"
+              selectedValue={this.state.status}
+              onSelect={(value) => this.setState({ status: value })}
             />
-            <RadioButton 
-              label="Vendido" 
-              value="vendido" 
-              selectedValue={this.state.status} 
-              onSelect={(value) => this.setState({ status: value })} 
+            <RadioButton
+              label="Vendido"
+              value="vendido"
+              selectedValue={this.state.status}
+              onSelect={(value) => this.setState({ status: value })}
             />
           </View>
 
-          {/* Campo de Brinco */}
           <Text style={styles.label}>Brinco</Text>
-          <TextInput 
-            style={styles.input} 
+          <TextInput
+            style={styles.input}
             placeholder="Digite o Brinco"
-            keyboardType="numeric" 
-            onChangeText={(text) => {
-              const numericText = text.replace(/[^0-9]/g, '');
-              this.setState({ searchLabelText: numericText });
-            }}
+            onChangeText={(text) => this.setState({ label: text })}
           />
-          <Text>Esse brinco já está sendo utilizado</Text>
 
-          {/* Campo de Data de Nascimento */}
+          <Text style={styles.label}>Raça</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite a Raça"
+            onChangeText={(text) => this.setState({ race: text })}
+          />
+
+          <Text style={styles.label}>Cor</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite a Cor"
+            onChangeText={(text) => this.setState({ color: text })}
+          />
+
+          <Text style={styles.label}>Media de Produçao</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite a Média de Produção"
+            keyboardType='numeric'
+            onChangeText={(text) => this.setState({ average_production: text })}
+          />
+
           <Text style={styles.label}>Data de Nascimento</Text>
           <TouchableOpacity style={styles.dateBox} onPress={() => this.setState({ showBirthDatePicker: true })}>
-            <Text style={styles.dateText}>{this.state.birthDate.toLocaleDateString()}</Text>
+            <Text style={styles.dateText}>{this.state.birthDate}</Text>
           </TouchableOpacity>
 
-          {/* Exibe o DatePicker de falecimento se o status for "Inativo" */}
           {this.state.status === 'inativo' && (
             <>
               <Text style={styles.label}>Data de Falecimento</Text>
               <TouchableOpacity style={styles.dateBox} onPress={() => this.setState({ showDeathDatePicker: true })}>
-                <Text style={styles.dateText}>{this.state.deathDate.toLocaleDateString()}</Text>
+                <Text style={styles.dateText}>{this.state.deathDate}</Text>
               </TouchableOpacity>
             </>
           )}
 
-          {/* Exibe o DatePicker de venda se o status for "Vendido" */}
           {this.state.status === 'vendido' && (
             <>
               <Text style={styles.label}>Data de Venda</Text>
               <TouchableOpacity style={styles.dateBox} onPress={() => this.setState({ showSaleDatePicker: true })}>
-                <Text style={styles.dateText}>{this.state.saleDate.toLocaleDateString()}</Text>
+                <Text style={styles.dateText}>{this.state.saleDate}</Text>
               </TouchableOpacity>
             </>
           )}
 
-          {/* Exibe os pickers de data quando clicados */}
           {this.state.showBirthDatePicker && (
             <DateTimePicker
-              value={this.state.birthDate}
+              value={new Date(this.state.birthDate)}
               mode="date"
               display="default"
               onChange={(event, selectedDate) => this.handleDateChange(event, selectedDate, 'birthDate')}
@@ -149,7 +224,7 @@ export default class CreateAnimal extends Component {
 
           {this.state.showDeathDatePicker && (
             <DateTimePicker
-              value={this.state.deathDate}
+              value={new Date(this.state.deathDate)}
               mode="date"
               display="default"
               onChange={(event, selectedDate) => this.handleDateChange(event, selectedDate, 'deathDate')}
@@ -158,59 +233,27 @@ export default class CreateAnimal extends Component {
 
           {this.state.showSaleDatePicker && (
             <DateTimePicker
-              value={this.state.saleDate}
+              value={new Date(this.state.saleDate)}
               mode="date"
               display="default"
               onChange={(event, selectedDate) => this.handleDateChange(event, selectedDate, 'saleDate')}
             />
           )}
 
-          {/* Campo de Raça */}
-          <Text style={styles.label}>Raça</Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Digite a raça do animal"
-            onChangeText={(text) => this.setState({ searchNameText: text })}
-          />
-
-          {/* Campo de Descrição do Animal */}
           <Text style={styles.label}>Descrição do Animal</Text>
           <TextInput
             style={[styles.input, styles.descriptionInput]}
             placeholder="Insira a descrição do animal"
             multiline
             maxLength={100}
-            onChangeText={(text) => this.setState({ descriptionText: text })}
-            value={this.state.descriptionText}
+            onChangeText={(text) => this.setState({ description: text })}
+            value={this.state.description}
           />
-          <Text style={styles.characterCount}>{`${this.state.descriptionText.length}/100 caracteres`}</Text>
+          <Text style={styles.characterCount}>{`${this.state.description.length}/100 caracteres`}</Text>
 
-          {/* Campo de Média de Leite (Visível apenas para fêmea) */}
-          {this.state.gender === 'femea' && (
-            <>
-              <Text style={styles.label}>Média de Leite</Text>
-              <TextInput 
-                style={styles.input} 
-                placeholder="Digite a média de leite" 
-                keyboardType="numeric" 
-                onChangeText={(text) => this.setState({ milkAverage: text })}
-                value={this.state.milkAverage}
-              />
-            </>
-          )}
-
-          {/* Campo de Foto do Animal */}
-          <Text style={styles.label}>Foto do Animal</Text>
-          <TouchableOpacity style={styles.photoBox} onPress={this.pickImage}>
-            {this.state.photo ? (
-              <Image source={{ uri: this.state.photo }} style={styles.photo} />
-            ) : (
-              <Text style={styles.uploadText}>Selecione uma foto</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Botão de Registro */}
-          <Botao>Registrar</Botao>
+          <Botao onPress={() => {
+            this.postAnimal()
+          }}>Registrar</Botao>
         </View>
       </ScrollView>
     );
